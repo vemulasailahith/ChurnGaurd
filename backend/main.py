@@ -42,7 +42,7 @@ allowed_origins = [o.strip() for o in _env_origins.split(",") if o.strip()] or [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|.*\.onrender\.com)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,7 +55,18 @@ async def startup_event():
     init_db()
 
 
-# ── Health check ─────────────────────────────────────────────────────────────
+# ── Health check & Root ───────────────────────────────────────────────────────
+@app.get("/", tags=["Health"])
+async def root():
+    return {
+        "status": "ok",
+        "service": "ChurnGuard API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/api/health"
+    }
+
+
 @app.get("/api/health", tags=["Health"])
 async def health_check():
     return {

@@ -1,0 +1,46 @@
+# Render Blueprint Configuration for ChurnGuard
+# https://render.com/docs/blueprint-spec
+
+services:
+  # ── 1. Backend Web Service (FastAPI) ───────────────────────────────────────
+  - type: web
+    name: churnguard-api
+    runtime: python
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_URL
+        value: sqlite:///./churnguard.db
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ALLOWED_COMPANY_DOMAIN
+        sync: false
+
+  # ── 2. Frontend Static Site (React + Vite SPA) ──────────────────────────────
+  - type: static
+    name: churnguard-web
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: VITE_ALLOWED_COMPANY_DOMAIN
+        sync: false
